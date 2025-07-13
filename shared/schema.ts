@@ -48,6 +48,8 @@ export const cartItemSchema = z.object({
   price: z.number(),
   quantity: z.number(),
   imageUrl: z.string(),
+  size: z.string().optional(),
+  color: z.string().optional(),
 });
 
 export type CartItem = z.infer<typeof cartItemSchema>;

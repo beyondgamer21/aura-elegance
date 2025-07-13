@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Heart, ShoppingCart, Star, Truck, Shield, RotateCcw } from "lucide-react";
@@ -15,6 +16,11 @@ export default function ProductDetail() {
   const [, setLocation] = useLocation();
   const { addToCart } = useCart();
   const { toast } = useToast();
+  
+  // State for product customization
+  const [selectedSize, setSelectedSize] = useState("S");
+  const [selectedColor, setSelectedColor] = useState("Black");
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   const { data: product, isLoading } = useQuery<Product>({
     queryKey: ["/api/products", id],
@@ -25,20 +31,44 @@ export default function ProductDetail() {
     },
   });
 
+  // Available options
+  const availableSizes = ["XS", "S", "M", "L", "XL", "XXL"];
+  const availableColors = [
+    { name: "Black", value: "#000000", image: product?.imageUrl },
+    { name: "Navy", value: "#1f2937", image: product?.imageUrl },
+    { name: "Charcoal", value: "#374151", image: product?.imageUrl },
+    { name: "Burgundy", value: "#7f1d1d", image: product?.imageUrl },
+  ];
+
+  const productImages = [
+    product?.imageUrl,
+    product?.imageUrl,
+    product?.imageUrl,
+    product?.imageUrl,
+  ].filter(Boolean);
+
+  const handleColorChange = (colorName: string) => {
+    setSelectedColor(colorName);
+    // Reset to first image when color changes to show new color variation
+    setSelectedImageIndex(0);
+  };
+
   const handleAddToCart = () => {
     if (!product) return;
     
     addToCart({
-      id: product.id.toString(),
-      name: product.name,
+      id: `${product.id}-${selectedSize}-${selectedColor}`,
+      name: `${product.name} (${selectedSize}, ${selectedColor})`,
       price: parseFloat(product.price),
       quantity: 1,
       imageUrl: product.imageUrl,
+      size: selectedSize,
+      color: selectedColor,
     });
     
     toast({
       title: "Added to cart",
-      description: `${product.name} has been added to your cart.`,
+      description: `${product.name} in ${selectedSize} size and ${selectedColor} color has been added to your cart.`,
     });
   };
 
@@ -107,18 +137,28 @@ export default function ProductDetail() {
           <div className="space-y-4">
             <div className="aspect-square rounded-2xl overflow-hidden bg-brand-dark">
               <img
-                src={product.imageUrl}
-                alt={product.name}
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                src={productImages[selectedImageIndex] || product.imageUrl}
+                alt={`${product.name} - ${selectedColor}`}
+                className="w-full h-full object-cover hover:scale-105 transition-all duration-700"
               />
             </div>
             <div className="grid grid-cols-4 gap-2">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="aspect-square rounded-lg overflow-hidden bg-brand-dark border border-gray-700">
+              {productImages.map((image, i) => (
+                <div 
+                  key={i} 
+                  className={`aspect-square rounded-lg overflow-hidden bg-brand-dark border cursor-pointer transition-all duration-300 ${
+                    selectedImageIndex === i 
+                      ? "border-purple-500 ring-2 ring-purple-500/50" 
+                      : "border-gray-700 hover:border-gray-600"
+                  }`}
+                  onClick={() => setSelectedImageIndex(i)}
+                >
                   <img
-                    src={product.imageUrl}
+                    src={image}
                     alt={`${product.name} view ${i + 1}`}
-                    className="w-full h-full object-cover opacity-60 hover:opacity-100 transition-opacity cursor-pointer"
+                    className={`w-full h-full object-cover transition-opacity duration-300 ${
+                      selectedImageIndex === i ? "opacity-100" : "opacity-60 hover:opacity-100"
+                    }`}
                   />
                 </div>
               ))}
@@ -150,13 +190,18 @@ export default function ProductDetail() {
 
             {/* Size Selection */}
             <div>
-              <h3 className="text-lg font-semibold mb-3">Size</h3>
+              <h3 className="text-lg font-semibold mb-3">Size: <span className="text-purple-400">{selectedSize}</span></h3>
               <div className="flex gap-2">
-                {["XS", "S", "M", "L", "XL"].map((size) => (
+                {availableSizes.map((size) => (
                   <Button
                     key={size}
                     variant="outline"
-                    className="w-12 h-12 border-gray-600 hover:border-purple-600 hover:bg-purple-600/20"
+                    onClick={() => setSelectedSize(size)}
+                    className={`w-12 h-12 transition-all duration-300 ${
+                      selectedSize === size
+                        ? "border-purple-500 bg-purple-600/30 text-purple-300"
+                        : "border-gray-600 hover:border-purple-600 hover:bg-purple-600/20"
+                    }`}
                   >
                     {size}
                   </Button>
@@ -166,18 +211,24 @@ export default function ProductDetail() {
 
             {/* Color Selection */}
             <div>
-              <h3 className="text-lg font-semibold mb-3">Color</h3>
+              <h3 className="text-lg font-semibold mb-3">Color: <span className="text-purple-400">{selectedColor}</span></h3>
               <div className="flex gap-2">
-                {["black", "white", "purple", "gold"].map((color) => (
+                {availableColors.map((color) => (
                   <button
-                    key={color}
-                    className={`w-8 h-8 rounded-full border-2 border-gray-600 hover:border-white transition-colors ${
-                      color === "black" ? "bg-black" :
-                      color === "white" ? "bg-white" :
-                      color === "purple" ? "bg-purple-600" :
-                      "bg-amber-500"
+                    key={color.name}
+                    onClick={() => handleColorChange(color.name)}
+                    className={`w-8 h-8 rounded-full border-2 transition-all duration-300 hover:scale-110 ${
+                      selectedColor === color.name
+                        ? "border-purple-500 ring-2 ring-purple-500/50"
+                        : "border-gray-600 hover:border-white"
                     }`}
-                  />
+                    style={{ backgroundColor: color.value }}
+                    title={color.name}
+                  >
+                    {selectedColor === color.name && (
+                      <div className="w-full h-full rounded-full border border-white/30" />
+                    )}
+                  </button>
                 ))}
               </div>
             </div>
