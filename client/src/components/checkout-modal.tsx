@@ -39,10 +39,12 @@ export default function CheckoutModal() {
 
   const createOrderMutation = useMutation({
     mutationFn: async (data: { orderForm: OrderForm; cartItems: typeof items }) => {
+      console.log("Submitting order data:", data);
       const response = await apiRequest("POST", "/api/orders", data);
       return response.json();
     },
     onSuccess: (data) => {
+      console.log("Order success:", data);
       toast({
         title: "Order placed successfully!",
         description: `Order #${data.orderId} has been placed. You will receive a confirmation email shortly.`,
@@ -53,12 +55,13 @@ export default function CheckoutModal() {
       queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
     },
     onError: (error) => {
+      console.error("Order error details:", error);
+      console.error("Error message:", error.message);
       toast({
         title: "Order failed",
-        description: "There was an error placing your order. Please try again.",
+        description: `Error: ${error.message || "Please try again"}`,
         variant: "destructive",
       });
-      console.error("Order error:", error);
     },
   });
 

@@ -50,6 +50,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create order
   app.post("/api/orders", async (req, res) => {
     try {
+      console.log("Received order request:", JSON.stringify(req.body, null, 2));
+      
       // Validate the order form data
       const orderFormData = orderFormSchema.parse(req.body.orderForm);
       const cartItems: CartItem[] = req.body.cartItems;
