@@ -1,8 +1,12 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { Resend } from "resend";
 import { storage } from "./storage";
 import { insertOrderSchema, orderFormSchema, type CartItem } from "@shared/schema";
 import { z } from "zod";
+
+// Initialize Resend
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get all products
@@ -109,28 +113,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
 }
 
 async function sendNotifications(order: any, cartItems: CartItem[]) {
-  // WhatsApp notification
-  const whatsappNumber = process.env.WHATSAPP_NUMBER || process.env.OWNER_WHATSAPP || "+1234567890";
-  const whatsappMessage = formatWhatsAppMessage(order, cartItems);
-  
-  // In a real implementation, you would use WhatsApp Business API
-  // For now, we'll log the message that would be sent
-  console.log("WhatsApp notification would be sent to:", whatsappNumber);
-  console.log("Message:", whatsappMessage);
+  try {
+    // Email notification using Resend
+    const ownerEmail = process.env.OWNER_EMAIL || "owner@auraclothing.com";
+    const fromEmail = process.env.FROM_EMAIL || "orders@auraclothing.com";
+    const emailSubject = `New Order #${order.id} - Aura Clothing`;
+    const emailBody = formatEmailMessage(order, cartItems);
+    
+    if (process.env.RESEND_API_KEY) {
+      try {
+        const emailResult = await resend.emails.send({
+          from: fromEmail,
+          to: [ownerEmail],
+          subject: emailSubject,
+          html: emailBody,
+        });
+        console.log("✅ Email sent successfully:", emailResult.data?.id);
+      } catch (emailError) {
+        console.error("❌ Failed to send email:", emailError);
+      }
+    } else {
+      console.log("⚠️ RESEND_API_KEY not found, email not sent");
+    }
 
-  // Email notification
-  const ownerEmail = process.env.OWNER_EMAIL || process.env.NOTIFICATION_EMAIL || "owner@auraclothing.com";
-  const emailSubject = `New Order #${order.id} - Aura Clothing`;
-  const emailBody = formatEmailMessage(order, cartItems);
-  
-  // In a real implementation, you would use Nodemailer or similar
-  console.log("Email notification would be sent to:", ownerEmail);
-  console.log("Subject:", emailSubject);
-  console.log("Body:", emailBody);
+    // WhatsApp notification (console log for now)
+    const whatsappNumber = process.env.WHATSAPP_NUMBER || process.env.OWNER_WHATSAPP || "+1234567890";
+    const whatsappMessage = formatWhatsAppMessage(order, cartItems);
+    
+    console.log("📱 WhatsApp notification:");
+    console.log("To:", whatsappNumber);
+    console.log("Message:", whatsappMessage);
+    console.log("💡 To enable WhatsApp, use WhatsApp Business API or services like Twilio");
 
-  // If running in production, you would implement actual sending here:
-  // await sendWhatsAppMessage(whatsappNumber, whatsappMessage);
-  // await sendEmail(ownerEmail, emailSubject, emailBody);
+  } catch (error) {
+    console.error("Error sending notifications:", error);
+  }
 }
 
 function formatWhatsAppMessage(order: any, cartItems: CartItem[]): string {
