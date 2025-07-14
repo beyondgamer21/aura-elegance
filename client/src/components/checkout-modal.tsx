@@ -12,11 +12,13 @@ import { useToast } from "@/hooks/use-toast";
 import { orderFormSchema, type OrderForm, type CartItem } from "@shared/schema";
 import { Loader2, User } from "lucide-react";
 
-export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
+export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
   const { items, clearCart } = useCart();
   const { user, userProfile } = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
 const {
     register,

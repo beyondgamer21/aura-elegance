@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useCart } from "@/hooks/use-cart";
 import { useAuth } from "@/hooks/use-auth";
 import { AuthModal } from "@/components/auth/auth-modal";
-import { ShoppingCartModal } from "./shopping-cart";
+import ShoppingCart, { ShoppingCartModal } from "./shopping-cart";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function Navigation() {
+export default function Navigation() {
   const { items } = useCart();
   const { user, userProfile, logout } = useAuth();
   const [isCartOpen, setIsCartOpen] = useState(false);
