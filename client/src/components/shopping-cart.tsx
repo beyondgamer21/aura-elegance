@@ -9,16 +9,9 @@ interface ShoppingCartModalProps {
   onClose: () => void;
 }
 
-export { ShoppingCartModal };
-
 export function ShoppingCartModal({ isOpen, onClose }: ShoppingCartModalProps) {
-  const { 
-    items, 
-    removeFromCart, 
-    updateQuantity, 
-    total,
-    openCheckout 
-  } = useCart();
+  const { items, removeFromCart, updateQuantity, total, openCheckout } =
+    useCart();
 
   const handleCheckout = () => {
     if (items.length === 0) {
@@ -94,16 +87,13 @@ export function ShoppingCartModal({ isOpen, onClose }: ShoppingCartModalProps) {
               <span>Total:</span>
               <span className="gradient-text">${total.toFixed(2)}</span>
             </div>
-            <Button
-              onClick={handleCheckout}
-              className="w-full btn-primary"
-            >
+            <Button onClick={handleCheckout} className="w-full btn-primary">
               Checkout
             </Button>
           </div>
         )}
       </div>
-      <CheckoutModal/>
+      <CheckoutModal />
     </div>
   );
 }
