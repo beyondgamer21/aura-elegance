@@ -19,7 +19,9 @@ export default function Navigation() {
       <div className="container py-2">
         <div className="hidden lg:flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0">
           <div>
-            <a href="#">Aura</a>
+            <a href="#" className="text-3xl font-bold gradient-text hover:scale-105 transition-transform duration-300">
+              Aura
+            </a>
           </div>
           <Input
             type="search"
@@ -53,7 +55,9 @@ export default function Navigation() {
         </div>
         <div className="lg:hidden flex justify-between items-center">
           <div>
-            <a href="#">Aura</a>
+            <a href="#" className="text-3xl font-bold gradient-text hover:scale-105 transition-transform duration-300">
+              Aura
+            </a>
           </div>
           <div className="flex items-center space-x-4">
             <Button

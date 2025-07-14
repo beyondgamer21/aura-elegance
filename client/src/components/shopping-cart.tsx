@@ -21,11 +21,21 @@ export function ShoppingCartModal({ isOpen, onClose }: ShoppingCartModalProps) {
   };
 
   return (
-    <div
-      className={`fixed right-0 top-0 h-full w-96 bg-brand-dark border-l border-gray-800 transform transition-transform duration-300 z-50 overflow-y-auto ${
-        isOpen ? "translate-x-0" : "translate-x-full"
-      }`}
-    >
+    <>
+      {/* Overlay */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={onClose}
+        />
+      )}
+      
+      {/* Cart Modal */}
+      <div
+        className={`fixed right-0 top-0 h-full w-96 bg-brand-dark border-l border-gray-800 transform transition-transform duration-300 z-50 overflow-y-auto ${
+          isOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-2xl font-semibold">Shopping Cart</h3>
@@ -94,7 +104,8 @@ export function ShoppingCartModal({ isOpen, onClose }: ShoppingCartModalProps) {
         )}
       </div>
       <CheckoutModal />
-    </div>
+      </div>
+    </>
   );
 }
 
