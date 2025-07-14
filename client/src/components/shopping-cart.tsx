@@ -1,17 +1,17 @@
-import { X, Plus, Minus, Trash2 } from "lucide-react";
+import { X, Minus, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/use-cart";
-import { useState } from "react";
-import { CheckoutModal } from "./checkout-modal";
 
-interface ShoppingCartModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-export function ShoppingCartModal({ isOpen, onClose }: ShoppingCartModalProps) {
-  const { items, removeFromCart, updateQuantity, total, openCheckout } =
-    useCart();
+export default function ShoppingCart() {
+  const { 
+    isOpen, 
+    toggleCart, 
+    items, 
+    removeFromCart, 
+    updateQuantity, 
+    total,
+    openCheckout 
+  } = useCart();
 
   const handleCheckout = () => {
     if (items.length === 0) {
@@ -21,26 +21,16 @@ export function ShoppingCartModal({ isOpen, onClose }: ShoppingCartModalProps) {
   };
 
   return (
-    <>
-      {/* Overlay */}
-      {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40"
-          onClick={onClose}
-        />
-      )}
-      
-      {/* Cart Modal */}
-      <div
-        className={`fixed right-0 top-0 h-full w-96 bg-brand-dark border-l border-gray-800 transform transition-transform duration-300 z-50 overflow-y-auto ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        }`}
-      >
+    <div
+      className={`fixed right-0 top-0 h-full w-96 bg-brand-dark border-l border-gray-800 transform transition-transform duration-300 z-50 overflow-y-auto ${
+        isOpen ? "translate-x-0" : "translate-x-full"
+      }`}
+    >
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-2xl font-semibold">Shopping Cart</h3>
           <button
-            onClick={onClose}
+            onClick={toggleCart}
             className="text-gray-400 hover:text-white transition-colors duration-300"
           >
             <X className="h-6 w-6" />
@@ -97,31 +87,15 @@ export function ShoppingCartModal({ isOpen, onClose }: ShoppingCartModalProps) {
               <span>Total:</span>
               <span className="gradient-text">${total.toFixed(2)}</span>
             </div>
-            <Button onClick={handleCheckout} className="w-full btn-primary">
+            <Button
+              onClick={handleCheckout}
+              className="w-full btn-primary"
+            >
               Checkout
             </Button>
           </div>
         )}
       </div>
-      <CheckoutModal />
-      </div>
-    </>
-  );
-}
-
-export { ShoppingCartModal };
-
-export default function ShoppingCart() {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const toggleCart = () => {
-    setIsOpen(!isOpen);
-  };
-
-  return (
-    <>
-      <Button onClick={toggleCart}>Open Cart</Button>
-      <ShoppingCartModal isOpen={isOpen} onClose={toggleCart} />
-    </>
+    </div>
   );
 }

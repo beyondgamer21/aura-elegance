@@ -1,42 +1,6 @@
-import { pgTable, text, serial, integer, decimal, timestamp, varchar, boolean, jsonb, index } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, decimal, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-
-// Session storage table for authentication
-export const sessions = pgTable(
-  "sessions",
-  {
-    sid: varchar("sid").primaryKey(),
-    sess: jsonb("sess").notNull(),
-    expire: timestamp("expire").notNull(),
-  },
-  (table) => [index("IDX_session_expire").on(table.expire)],
-);
-
-// Users table for authentication
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  email: varchar("email").unique(),
-  phone: varchar("phone").unique(),
-  firstName: varchar("first_name"),
-  lastName: varchar("last_name"),
-  passwordHash: varchar("password_hash"),
-  profileImageUrl: varchar("profile_image_url"),
-  isEmailVerified: boolean("is_email_verified").default(false),
-  isPhoneVerified: boolean("is_phone_verified").default(false),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-// Authentication tokens table for email/phone verification
-export const authTokens = pgTable("auth_tokens", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
-  token: varchar("token").notNull(),
-  type: varchar("type").notNull(), // 'email_verification', 'phone_verification', 'password_reset'
-  expiresAt: timestamp("expires_at").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-});
 
 export const products = pgTable("products", {
   id: serial("id").primaryKey(),
@@ -50,7 +14,6 @@ export const products = pgTable("products", {
 
 export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
   customerName: text("customer_name").notNull(),
   customerEmail: text("customer_email").notNull(),
   customerPhone: text("customer_phone").notNull(),
@@ -103,38 +66,3 @@ export const orderFormSchema = z.object({
 });
 
 export type OrderForm = z.infer<typeof orderFormSchema>;
-
-// User authentication schemas
-export const insertUserSchema = createInsertSchema(users).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const loginSchema = z.object({
-  identifier: z.string().min(1, "Email or phone number is required"), // Can be email or phone
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
-
-export const signupSchema = z.object({
-  email: z.string().email("Invalid email address").optional(),
-  phone: z.string().min(10, "Phone number must be at least 10 characters").optional(),
-  firstName: z.string().min(2, "First name must be at least 2 characters"),
-  lastName: z.string().min(2, "Last name must be at least 2 characters"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-}).refine(data => data.email || data.phone, {
-  message: "Either email or phone number is required",
-  path: ["identifier"],
-});
-
-export const verificationSchema = z.object({
-  token: z.string().min(1, "Verification code is required"),
-  type: z.enum(["email_verification", "phone_verification"]),
-});
-
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
-export type LoginForm = z.infer<typeof loginSchema>;
-export type SignupForm = z.infer<typeof signupSchema>;
-export type VerificationForm = z.infer<typeof verificationSchema>;
-export type AuthToken = typeof authTokens.$inferSelect;

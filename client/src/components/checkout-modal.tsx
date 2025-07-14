@@ -1,203 +1,265 @@
-
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { X, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCart } from "@/hooks/use-cart";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import { orderFormSchema, type OrderForm } from "@shared/schema";
-import { Loader2 } from "lucide-react";
 
-interface CheckoutModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
-  const { items, clearCart, isCheckoutOpen, closeCheckout } = useCart();
+export default function CheckoutModal() {
+  const { 
+    isCheckoutOpen, 
+    closeCheckout, 
+    items, 
+    total, 
+    clearCart 
+  } = useCart();
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const queryClient = useQueryClient();
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors }
-  } = useForm<OrderForm>({
+  const form = useForm<OrderForm>({
     resolver: zodResolver(orderFormSchema),
+    defaultValues: {
+      customerName: "",
+      customerEmail: "",
+      customerPhone: "",
+      customerAddress: "",
+      customerCity: "",
+      customerPostalCode: "",
+      specialInstructions: "",
+    },
   });
 
-  const onSubmit = async (data: OrderForm) => {
-    setIsSubmitting(true);
-    
-    try {
-      console.log("Submitting order data:", {
-        orderForm: data,
-        cartItems: items
+  const createOrderMutation = useMutation({
+    mutationFn: async (data: { orderForm: OrderForm; cartItems: typeof items }) => {
+      console.log("Submitting order data:", data);
+      const response = await apiRequest("POST", "/api/orders", data);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      console.log("Order success:", data);
+      toast({
+        title: "Order placed successfully!",
+        description: `Order #${data.orderId} has been placed. You will receive a confirmation email shortly.`,
       });
-
-      const response = await fetch("/api/orders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          orderForm: data,
-          cartItems: items
-        }),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        console.log("Order success:", result);
-        toast({
-          title: "Order placed successfully!",
-          description: `Order #${result.orderId} has been received. We'll send you an email confirmation shortly.`,
-        });
-        clearCart();
-        reset();
-        closeCheckout();
-      } else {
-        throw new Error(result.message || "Failed to place order");
-      }
-    } catch (error) {
-      console.error("Order submission error:", error);
+      clearCart();
+      closeCheckout();
+      form.reset();
+      queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
+    },
+    onError: (error) => {
+      console.error("Order error details:", error);
+      console.error("Error message:", error.message);
       toast({
         title: "Order failed",
-        description: error instanceof Error ? error.message : "Failed to place order. Please try again.",
+        description: `Error: ${error.message || "Please try again"}`,
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
+    },
+  });
+
+  const onSubmit = (data: OrderForm) => {
+    if (items.length === 0) {
+      toast({
+        title: "Cart is empty",
+        description: "Please add items to your cart before placing an order.",
+        variant: "destructive",
+      });
+      return;
     }
+
+    createOrderMutation.mutate({
+      orderForm: data,
+      cartItems: items,
+    });
   };
 
+  if (!isCheckoutOpen) return null;
+
   return (
-    <Dialog open={isCheckoutOpen} onOpenChange={closeCheckout}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Checkout</DialogTitle>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid gap-4">
-            <div>
-              <Label htmlFor="customerName">Full Name</Label>
-              <Input
-                id="customerName"
-                placeholder="John Doe"
-                className="mt-1"
-                {...register("customerName")}
-              />
-              {errors.customerName && (
-                <p className="text-sm text-red-500 mt-1">{errors.customerName.message}</p>
-              )}
-            </div>
-            
-            <div>
-              <Label htmlFor="customerEmail">Email</Label>
-              <Input
-                id="customerEmail"
-                placeholder="johndoe@example.com"
-                type="email"
-                className="mt-1"
-                {...register("customerEmail")}
-              />
-              {errors.customerEmail && (
-                <p className="text-sm text-red-500 mt-1">{errors.customerEmail.message}</p>
-              )}
-            </div>
-            
-            <div>
-              <Label htmlFor="customerPhone">Phone Number</Label>
-              <Input
-                id="customerPhone"
-                placeholder="123-456-7890"
-                type="tel"
-                className="mt-1"
-                {...register("customerPhone")}
-              />
-              {errors.customerPhone && (
-                <p className="text-sm text-red-500 mt-1">{errors.customerPhone.message}</p>
-              )}
-            </div>
-            
-            <div>
-              <Label htmlFor="customerAddress">Address</Label>
-              <Input
-                id="customerAddress"
-                placeholder="123 Main St"
-                className="mt-1"
-                {...register("customerAddress")}
-              />
-              {errors.customerAddress && (
-                <p className="text-sm text-red-500 mt-1">{errors.customerAddress.message}</p>
-              )}
-            </div>
-            
-            <div>
-              <Label htmlFor="customerCity">City</Label>
-              <Input
-                id="customerCity"
-                placeholder="New York"
-                className="mt-1"
-                {...register("customerCity")}
-              />
-              {errors.customerCity && (
-                <p className="text-sm text-red-500 mt-1">{errors.customerCity.message}</p>
-              )}
-            </div>
-            
-            <div>
-              <Label htmlFor="customerPostalCode">Postal Code</Label>
-              <Input
-                id="customerPostalCode"
-                placeholder="10001"
-                className="mt-1"
-                {...register("customerPostalCode")}
-              />
-              {errors.customerPostalCode && (
-                <p className="text-sm text-red-500 mt-1">{errors.customerPostalCode.message}</p>
-              )}
-            </div>
-            
-            <div>
-              <Label htmlFor="specialInstructions">Special Instructions (Optional)</Label>
-              <Textarea
-                id="specialInstructions"
-                placeholder="Leave a note for the delivery driver"
-                className="mt-1 resize-none"
-                {...register("specialInstructions")}
-              />
-            </div>
-          </div>
-
-          <div className="border-t pt-4">
-            <div className="flex justify-between items-center text-lg font-semibold mb-4">
-              <span>Total:</span>
-              <span>${total.toFixed(2)}</span>
-            </div>
-            
-            <Button 
-              type="submit" 
-              className="w-full"
-              disabled={isSubmitting || items.length === 0}
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-brand-dark rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-8">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-2xl font-semibold">Checkout</h3>
+            <button
+              onClick={closeCheckout}
+              className="text-gray-400 hover:text-white transition-colors duration-300"
             >
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isSubmitting ? "Placing Order..." : `Place Order ($${total.toFixed(2)})`}
-            </Button>
+              <X className="h-6 w-6" />
+            </button>
           </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="customerName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Full Name *</FormLabel>
+                      <FormControl>
+                        <Input 
+                          {...field} 
+                          placeholder="John Doe" 
+                          className="input-field"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="customerEmail"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email *</FormLabel>
+                      <FormControl>
+                        <Input 
+                          {...field} 
+                          type="email" 
+                          placeholder="john@example.com" 
+                          className="input-field"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="customerPhone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone Number *</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        type="tel" 
+                        placeholder="+1 (555) 123-4567" 
+                        className="input-field"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="customerAddress"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Address *</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        placeholder="123 Main Street" 
+                        className="input-field"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="customerCity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>City *</FormLabel>
+                      <FormControl>
+                        <Input 
+                          {...field} 
+                          placeholder="New York" 
+                          className="input-field"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="customerPostalCode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Postal Code *</FormLabel>
+                      <FormControl>
+                        <Input 
+                          {...field} 
+                          placeholder="10001" 
+                          className="input-field"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="specialInstructions"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Special Instructions</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        {...field} 
+                        rows={3} 
+                        placeholder="Any special delivery instructions..."
+                        className="input-field resize-none"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="border-t border-gray-700 pt-6">
+                <div className="bg-gray-800 p-4 rounded-lg mb-6">
+                  <h4 className="font-semibold mb-4">Order Summary</h4>
+                  <div className="space-y-2 mb-4">
+                    {items.map((item) => (
+                      <div key={item.id} className="flex justify-between">
+                        <span>{item.name} x{item.quantity}</span>
+                        <span>${(item.price * item.quantity).toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-between text-xl font-semibold">
+                    <span>Total:</span>
+                    <span className="gradient-text">${total.toFixed(2)}</span>
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={createOrderMutation.isPending}
+                  className="w-full btn-primary"
+                >
+                  <CreditCard className="h-4 w-4 mr-2" />
+                  {createOrderMutation.isPending ? "Processing..." : "Place Order"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </div>
+      </div>
+    </div>
   );
 }
-
-export default CheckoutModal;
