@@ -25,7 +25,7 @@ export default function Navigation() {
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <nav className="sticky top-0 inset-x-0 bg-white/90 backdrop-blur supports-[overscroll-behavior]:bg-white/95 border-b border-gray-200 z-50">
+    <nav className="sticky top-0 inset-x-0 bg-brand-black/80 backdrop-blur-md supports-[backdrop-filter]:bg-brand-black/60 border-b border-gray-800 z-50">
       <div className="container py-2">
         <div className="hidden lg:flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0">
           <div>
@@ -42,14 +42,14 @@ export default function Navigation() {
             <Button
               variant="ghost"
               size="icon"
-              className="text-gray-500 hover:bg-gray-100"
+              className="text-gray-300 hover:bg-gray-800"
             >
               <Search className="h-5 w-5" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              className="text-gray-500 hover:bg-gray-100 relative"
+              className="text-gray-300 hover:bg-gray-800 relative"
               onClick={() => setIsCartOpen(true)}
             >
               <ShoppingCart className="h-5 w-5" />
@@ -65,7 +65,7 @@ export default function Navigation() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="text-white hover:bg-white/20"
+                    className="text-gray-300 hover:bg-gray-800"
                   >
                     <User className="h-5 w-5" />
                   </Button>
@@ -84,7 +84,7 @@ export default function Navigation() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:bg-white/20"
+                className="text-gray-300 hover:bg-gray-800"
                 onClick={() => setIsAuthModalOpen(true)}
               >
                 <User className="h-5 w-5" />
@@ -100,7 +100,7 @@ export default function Navigation() {
             <Button
               variant="ghost"
               size="icon"
-              className="text-gray-500 hover:bg-gray-100 relative"
+              className="text-gray-300 hover:bg-gray-800 relative"
               onClick={() => setIsCartOpen(true)}
             >
               <ShoppingCart className="h-5 w-5" />
@@ -113,7 +113,7 @@ export default function Navigation() {
             <Button
               variant="ghost"
               size="icon"
-              className="text-gray-500 hover:bg-gray-100"
+              className="text-gray-300 hover:bg-gray-800"
               onClick={() => setIsMobileMenuOpen(true)}
             >
               <Menu className="h-5 w-5" />
