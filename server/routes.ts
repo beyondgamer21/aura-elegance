@@ -51,11 +51,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/orders", async (req, res) => {
     try {
       console.log("Received order request:", JSON.stringify(req.body, null, 2));
-      
+
       // Validate the order form data
       const orderFormData = orderFormSchema.parse(req.body.orderForm);
       const cartItems: CartItem[] = req.body.cartItems;
-      
+
       if (!cartItems || cartItems.length === 0) {
         return res.status(400).json({ message: "Cart cannot be empty" });
       }
@@ -116,12 +116,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 async function sendNotifications(order: any, cartItems: CartItem[]) {
   try {
-    // Email notification using Resend
-    const ownerEmail = process.env.OWNER_EMAIL || order.customerEmail; // Send to customer if no owner email set
-    const fromEmail = "onboarding@resend.dev"; // Use Resend's verified sender for free accounts
+    // Email notification using Resend - always send to your email address
+    const ownerEmail = "kaleshreyash940@gmail.com"; // Your verified email address
+    const fromEmail = "onboarding@resend.dev"; // Resend's default verified domain
     const emailSubject = `New Order #${order.id} - Aura Clothing`;
     const emailBody = formatEmailMessage(order, cartItems);
-    
+
     if (process.env.RESEND_API_KEY) {
       try {
         const emailResult = await resend.emails.send({
@@ -144,7 +144,7 @@ async function sendNotifications(order: any, cartItems: CartItem[]) {
     // WhatsApp notification (console log for now)
     const whatsappNumber = process.env.WHATSAPP_NUMBER || process.env.OWNER_WHATSAPP || "+1234567890";
     const whatsappMessage = formatWhatsAppMessage(order, cartItems);
-    
+
     console.log("📱 WhatsApp notification:");
     console.log("To:", whatsappNumber);
     console.log("Message:", whatsappMessage);
@@ -198,7 +198,7 @@ function formatEmailMessage(order: any, cartItems: CartItem[]): string {
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
       <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
         <h1 style="color: #8B5CF6; text-align: center;">New Order Received</h1>
-        
+
         <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <h2>Order Details</h2>
           <p><strong>Order ID:</strong> #${order.id}</p>
