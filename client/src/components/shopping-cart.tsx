@@ -2,6 +2,10 @@ import { X, Minus, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/use-cart";
 
+export function ShoppingCartModal() {
+  return <ShoppingCart />;
+}
+
 export default function ShoppingCart() {
   const { 
     isOpen, 
