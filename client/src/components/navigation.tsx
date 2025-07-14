@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useCart } from "@/hooks/use-cart";
 import { useAuth } from "@/hooks/use-auth";
 import { AuthModal } from "@/components/auth/auth-modal";
-import ShoppingCart, { ShoppingCartModal } from "./shopping-cart";
+import { ShoppingCartModal } from "./shopping-cart";
 import {
   DropdownMenu,
   DropdownMenuContent,
