@@ -1,15 +1,18 @@
-import { X, Minus, Plus, Trash2 } from "lucide-react";
+import { X, Plus, Minus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/use-cart";
+import { useState } from "react";
+import { CheckoutModal } from "./checkout-modal";
 
-export function ShoppingCartModal() {
-  return <ShoppingCart />;
+interface ShoppingCartModalProps {
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-export default function ShoppingCart() {
+export { ShoppingCartModal };
+
+export function ShoppingCartModal({ isOpen, onClose }: ShoppingCartModalProps) {
   const { 
-    isOpen, 
-    toggleCart, 
     items, 
     removeFromCart, 
     updateQuantity, 
@@ -34,7 +37,7 @@ export default function ShoppingCart() {
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-2xl font-semibold">Shopping Cart</h3>
           <button
-            onClick={toggleCart}
+            onClick={onClose}
             className="text-gray-400 hover:text-white transition-colors duration-300"
           >
             <X className="h-6 w-6" />
@@ -100,6 +103,22 @@ export default function ShoppingCart() {
           </div>
         )}
       </div>
+      <CheckoutModal/>
     </div>
+  );
+}
+
+export default function ShoppingCart() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleCart = () => {
+    setIsOpen(!isOpen);
+  };
+
+  return (
+    <>
+      <Button onClick={toggleCart}>Open Cart</Button>
+      <ShoppingCartModal isOpen={isOpen} onClose={toggleCart} />
+    </>
   );
 }

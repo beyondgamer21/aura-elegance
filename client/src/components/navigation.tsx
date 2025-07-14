@@ -1,24 +1,14 @@
 import { useState } from "react";
-import { ShoppingCart, User, Search, Menu, X, LogOut } from "lucide-react";
+import { ShoppingCart, Search, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useCart } from "@/hooks/use-cart";
-import { useAuth } from "@/hooks/use-auth";
-import { AuthModal } from "@/components/auth/auth-modal";
 import { ShoppingCartModal } from "./shopping-cart";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 export default function Navigation() {
   const { items } = useCart();
-  const { user, userProfile, logout } = useAuth();
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -59,37 +49,6 @@ export default function Navigation() {
                 </Badge>
               )}
             </Button>
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-gray-300 hover:bg-gray-800"
-                  >
-                    <User className="h-5 w-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem disabled>
-                    {userProfile?.fullName || user.email}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={logout}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Sign Out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-gray-300 hover:bg-gray-800"
-                onClick={() => setIsAuthModalOpen(true)}
-              >
-                <User className="h-5 w-5" />
-              </Button>
-            )}
           </div>
         </div>
         <div className="lg:hidden flex justify-between items-center">
@@ -124,10 +83,6 @@ export default function Navigation() {
       <ShoppingCartModal
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
-      />
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
       />
     </nav>
   );
