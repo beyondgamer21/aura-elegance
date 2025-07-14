@@ -117,22 +117,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
 async function sendNotifications(order: any, cartItems: CartItem[]) {
   try {
     // Email notification using Resend
-    const ownerEmail = process.env.OWNER_EMAIL || "owner@auraclothing.com";
-    const fromEmail = process.env.FROM_EMAIL || "orders@auraclothing.com";
+    const ownerEmail = process.env.OWNER_EMAIL || order.customerEmail; // Send to customer if no owner email set
+    const fromEmail = process.env.FROM_EMAIL || "onboarding@resend.dev"; // Use Resend's default sender
     const emailSubject = `New Order #${order.id} - Aura Clothing`;
     const emailBody = formatEmailMessage(order, cartItems);
     
     if (process.env.RESEND_API_KEY) {
       try {
         const emailResult = await resend.emails.send({
-          from: fromEmail,
+          from: `Aura Clothing <${fromEmail}>`,
           to: [ownerEmail],
           subject: emailSubject,
           html: emailBody,
         });
-        console.log("✅ Email sent successfully:", emailResult.data?.id);
+        console.log("✅ Email sent successfully to:", ownerEmail);
+        console.log("📧 Email ID:", emailResult.data?.id);
+        console.log("📧 Full response:", JSON.stringify(emailResult, null, 2));
       } catch (emailError) {
         console.error("❌ Failed to send email:", emailError);
+        console.error("❌ Error details:", emailError.message);
       }
     } else {
       console.log("⚠️ RESEND_API_KEY not found, email not sent");
