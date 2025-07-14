@@ -108,6 +108,8 @@ export function ShoppingCartModal({ isOpen, onClose }: ShoppingCartModalProps) {
   );
 }
 
+export { ShoppingCartModal };
+
 export default function ShoppingCart() {
   const [isOpen, setIsOpen] = useState(false);
 
