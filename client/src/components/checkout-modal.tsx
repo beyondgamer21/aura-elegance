@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -7,101 +8,127 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useCart } from "@/hooks/use-cart";
-import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
-import { orderFormSchema, type OrderForm, type CartItem } from "@shared/schema";
-import { Loader2, User } from "lucide-react";
+import { orderFormSchema, type OrderForm } from "@shared/schema";
+import { Loader2 } from "lucide-react";
 
-export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
-  const { items, clearCart } = useCart();
-  const { user, userProfile } = useAuth();
+interface CheckoutModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
+  const { items, clearCart, isCheckoutOpen, closeCheckout } = useCart();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-const {
+  const {
     register,
     handleSubmit,
     reset,
     formState: { errors }
   } = useForm<OrderForm>({
     resolver: zodResolver(orderFormSchema),
-    defaultValues: {
-      customerName: userProfile?.fullName || "",
-      customerEmail: userProfile?.email || user?.email || "",
-      customerPhone: userProfile?.phone || user?.phoneNumber || "",
-    }
   });
 
+  const onSubmit = async (data: OrderForm) => {
+    setIsSubmitting(true);
+    
+    try {
+      console.log("Submitting order data:", {
+        orderForm: data,
+        cartItems: items
+      });
+
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          orderForm: data,
+          cartItems: items
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        console.log("Order success:", result);
+        toast({
+          title: "Order placed successfully!",
+          description: `Order #${result.orderId} has been received. We'll send you an email confirmation shortly.`,
+        });
+        clearCart();
+        reset();
+        closeCheckout();
+      } else {
+        throw new Error(result.message || "Failed to place order");
+      }
+    } catch (error) {
+      console.error("Order submission error:", error);
+      toast({
+        title: "Order failed",
+        description: error instanceof Error ? error.message : "Failed to place order. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+    <Dialog open={isCheckoutOpen} onOpenChange={closeCheckout}>
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Checkout</DialogTitle>
         </DialogHeader>
 
-        {!user && (
-          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-            <div className="flex items-center gap-2 text-amber-700">
-              <User className="h-5 w-5" />
-              <span className="font-medium">Please sign in to continue</span>
-            </div>
-            <p className="text-sm text-amber-600 mt-1">
-              You need to be signed in to place an order.
-            </p>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit(async (data) => {
-          setIsSubmitting(true);
-          console.log(data);
-
-          // Simulate order submission
-          await new Promise((resolve) => setTimeout(resolve, 2000));
-
-          setIsSubmitting(false);
-          toast({
-            title: "Order placed!",
-            description: "Your order has been placed successfully.",
-          });
-          clearCart();
-          reset();
-          onClose();
-        })}>
-          <div className="grid gap-4 py-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="grid gap-4">
             <div>
               <Label htmlFor="customerName">Full Name</Label>
               <Input
                 id="customerName"
-                defaultValue={userProfile?.fullName}
                 placeholder="John Doe"
                 className="mt-1"
                 {...register("customerName")}
               />
+              {errors.customerName && (
+                <p className="text-sm text-red-500 mt-1">{errors.customerName.message}</p>
+              )}
             </div>
+            
             <div>
               <Label htmlFor="customerEmail">Email</Label>
               <Input
                 id="customerEmail"
-                defaultValue={userProfile?.email || user?.email}
                 placeholder="johndoe@example.com"
                 type="email"
                 className="mt-1"
                 {...register("customerEmail")}
               />
+              {errors.customerEmail && (
+                <p className="text-sm text-red-500 mt-1">{errors.customerEmail.message}</p>
+              )}
             </div>
+            
             <div>
               <Label htmlFor="customerPhone">Phone Number</Label>
               <Input
                 id="customerPhone"
-                defaultValue={userProfile?.phone || user?.phoneNumber}
                 placeholder="123-456-7890"
                 type="tel"
                 className="mt-1"
                 {...register("customerPhone")}
               />
+              {errors.customerPhone && (
+                <p className="text-sm text-red-500 mt-1">{errors.customerPhone.message}</p>
+              )}
             </div>
+            
             <div>
               <Label htmlFor="customerAddress">Address</Label>
               <Input
@@ -110,7 +137,11 @@ const {
                 className="mt-1"
                 {...register("customerAddress")}
               />
+              {errors.customerAddress && (
+                <p className="text-sm text-red-500 mt-1">{errors.customerAddress.message}</p>
+              )}
             </div>
+            
             <div>
               <Label htmlFor="customerCity">City</Label>
               <Input
@@ -119,7 +150,11 @@ const {
                 className="mt-1"
                 {...register("customerCity")}
               />
+              {errors.customerCity && (
+                <p className="text-sm text-red-500 mt-1">{errors.customerCity.message}</p>
+              )}
             </div>
+            
             <div>
               <Label htmlFor="customerPostalCode">Postal Code</Label>
               <Input
@@ -128,9 +163,13 @@ const {
                 className="mt-1"
                 {...register("customerPostalCode")}
               />
+              {errors.customerPostalCode && (
+                <p className="text-sm text-red-500 mt-1">{errors.customerPostalCode.message}</p>
+              )}
             </div>
+            
             <div>
-              <Label htmlFor="specialInstructions">Special Instructions</Label>
+              <Label htmlFor="specialInstructions">Special Instructions (Optional)</Label>
               <Textarea
                 id="specialInstructions"
                 placeholder="Leave a note for the delivery driver"
@@ -139,21 +178,26 @@ const {
               />
             </div>
           </div>
-          <Button 
-            type="submit" 
-            className="w-full"
-            disabled={isSubmitting || !user}
-          >
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {user ? `Place Order ($${total.toFixed(2)})` : "Sign In Required"}
-          </Button>
+
+          <div className="border-t pt-4">
+            <div className="flex justify-between items-center text-lg font-semibold mb-4">
+              <span>Total:</span>
+              <span>${total.toFixed(2)}</span>
+            </div>
+            
+            <Button 
+              type="submit" 
+              className="w-full"
+              disabled={isSubmitting || items.length === 0}
+            >
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isSubmitting ? "Placing Order..." : `Place Order ($${total.toFixed(2)})`}
+            </Button>
+          </div>
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
-interface CheckoutModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
+export default CheckoutModal;
