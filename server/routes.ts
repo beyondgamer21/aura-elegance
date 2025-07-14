@@ -1,12 +1,40 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { Resend } from "resend";
+import twilio from "twilio";
+import { adminAuth } from "./firebase-admin";
 import { storage } from "./storage";
 import { insertOrderSchema, orderFormSchema, type CartItem } from "@shared/schema";
 import { z } from "zod";
 
 // Initialize Resend
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Initialize Twilio (only if credentials are provided)
+let twilioClient: twilio.Twilio | null = null;
+if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
+  twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+}
+
+// Firebase Auth Middleware
+async function verifyFirebaseToken(req: any, res: any, next: any) {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ message: "No token provided" });
+  }
+
+  const token = authHeader.split('Bearer ')[1];
+
+  try {
+    const decodedToken = await adminAuth.verifyIdToken(token);
+    req.user = decodedToken;
+    next();
+  } catch (error) {
+    console.error("Token verification failed:", error);
+    return res.status(401).json({ message: "Invalid token" });
+  }
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get all products
@@ -47,8 +75,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create order
-  app.post("/api/orders", async (req, res) => {
+  // Create order endpoint (requires authentication)
+  app.post("/api/orders", verifyFirebaseToken, async (req, res) => {
     try {
       console.log("Received order request:", JSON.stringify(req.body, null, 2));
 
