@@ -118,7 +118,7 @@ async function sendNotifications(order: any, cartItems: CartItem[]) {
   try {
     // Email notification using Resend
     const ownerEmail = process.env.OWNER_EMAIL || order.customerEmail; // Send to customer if no owner email set
-    const fromEmail = process.env.FROM_EMAIL || "onboarding@resend.dev"; // Use Resend's default sender
+    const fromEmail = "onboarding@resend.dev"; // Use Resend's verified sender for free accounts
     const emailSubject = `New Order #${order.id} - Aura Clothing`;
     const emailBody = formatEmailMessage(order, cartItems);
     
