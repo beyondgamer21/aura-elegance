@@ -53,7 +53,7 @@ export default function ShoppingCart() {
                 />
                 <div className="flex-1 min-w-0">
                   <h4 className="font-semibold truncate">{item.name}</h4>
-                  <p className="text-amber-400">${item.price.toFixed(2)}</p>
+                  <p className="text-amber-400">₹{item.price.toFixed(2)}</p>
                 </div>
                 <div className="flex items-center space-x-2">
                   <button
@@ -85,7 +85,7 @@ export default function ShoppingCart() {
           <div className="border-t border-gray-700 pt-6">
             <div className="flex justify-between text-xl font-semibold mb-6">
               <span>Total:</span>
-              <span className="gradient-text">${total.toFixed(2)}</span>
+              <span className="gradient-text">₹{total.toFixed(2)}</span>
             </div>
             <Button
               onClick={handleCheckout}

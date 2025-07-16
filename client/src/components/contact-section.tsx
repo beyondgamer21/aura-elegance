@@ -33,7 +33,7 @@ export default function ContactSection() {
                 </div>
                 <div>
                   <h4 className="font-semibold">Address</h4>
-                  <p className="text-gray-400">123 Fashion District, Style City, SC 10001</p>
+                  <p className="text-gray-400">Nashik , Ashoka marg , 123 apt - sut , soc</p>
                 </div>
               </div>
               <div className="flex items-center space-x-4">
@@ -42,7 +42,7 @@ export default function ContactSection() {
                 </div>
                 <div>
                   <h4 className="font-semibold">Phone</h4>
-                  <p className="text-gray-400">+1 (555) 123-4567</p>
+                  <p className="text-gray-400">+91 99898989899</p>
                 </div>
               </div>
               <div className="flex items-center space-x-4">

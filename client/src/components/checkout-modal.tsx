@@ -237,13 +237,13 @@ export default function CheckoutModal() {
                     {items.map((item) => (
                       <div key={item.id} className="flex justify-between">
                         <span>{item.name} x{item.quantity}</span>
-                        <span>${(item.price * item.quantity).toFixed(2)}</span>
+                        <span>₹{(item.price * item.quantity).toFixed(2)}</span>
                       </div>
                     ))}
                   </div>
                   <div className="flex justify-between text-xl font-semibold">
                     <span>Total:</span>
-                    <span className="gradient-text">${total.toFixed(2)}</span>
+                    <span className="gradient-text">₹{total.toFixed(2)}</span>
                   </div>
                 </div>
 

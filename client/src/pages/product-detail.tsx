@@ -182,8 +182,9 @@ export default function ProductDetail() {
               <h1 className="text-4xl font-bold mb-2">{product.name}</h1>
               <p className="text-xl text-gray-400 mb-4">{product.description}</p>
               <div className="flex items-center gap-4 mb-6">
-                <span className="text-3xl font-bold gradient-text">${product.price}</span>
-                <span className="text-lg text-gray-500 line-through">$399.00</span>
+                <span className="text-3xl font-bold gradient-text">₹
+{product.price}</span>
+                <span className="text-lg text-gray-500 line-through">₹399.00</span>
                 <Badge variant="destructive">25% OFF</Badge>
               </div>
             </div>
@@ -264,7 +265,7 @@ export default function ProductDetail() {
                 </div>
                 <div>
                   <p className="font-semibold text-sm">Free Shipping</p>
-                  <p className="text-xs text-gray-400">On orders over $100</p>
+                  <p className="text-xs text-gray-400">On orders over ₹100</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">

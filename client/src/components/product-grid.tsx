@@ -123,7 +123,8 @@ export default function ProductGrid({ featured = false }: ProductGridProps) {
             <div className="p-6">
               <h3 className="text-lg font-semibold mb-2 group-hover:text-purple-300 transition-colors duration-300">{product.name}</h3>
               <p className="text-gray-400 text-sm mb-3">{product.description}</p>
-              <p className="text-xl font-bold gradient-text">${product.price}</p>
+              <p className="text-xl font-bold gradient-text">₹
+{product.price}</p>
             </div>
           </div>
         ))}

@@ -1,5 +1,4 @@
 import type { Express } from "express";
-import 'dotenv/config';
 import { createServer, type Server } from "http";
 import { Resend } from "resend";
 import { storage } from "./storage";
@@ -11,11 +10,7 @@ import {
 import { z } from "zod";
 
 // Initialize Resend
-if (!process.env.RESEND_API_KEY) {
-  throw new Error("❌ RESEND_API_KEY is missing in .env file");
-}
 const resend = new Resend(process.env.RESEND_API_KEY);
-
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get all products

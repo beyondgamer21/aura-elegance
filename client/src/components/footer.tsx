@@ -111,7 +111,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
-          <p>&copy; 2024 AURA Clothing. All rights reserved. | Privacy Policy | Terms of Service</p>
+          <p>&copy; 2024 AURA Clothing. All rights reserved. | Privacy Policy | Terms of Service | devloper - shreyash | devloper mail - kaleshreyash940@gmail.com</p>
         </div>
       </div>
     </footer>
